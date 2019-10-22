@@ -10,15 +10,11 @@ future==0.17.1
 isodate==0.6.0
 jdcal==1.4.1
 leather==0.3.3
-mysql-connector-python==8.0.16
-mysqlclient==1.4.2.post1
 numpy==1.16.4
 openpyxl==2.6.2
 pandas==0.24.2
 parsedatetime==2.4
 protobuf==3.8.0
-psycopg2==2.8.3
-PyMySQL==0.9.3
 python-dateutil==2.8.0
 python-slugify==3.0.2
 pytimeparse==1.1.8
