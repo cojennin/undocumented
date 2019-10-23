@@ -7,3 +7,6 @@ config.py
 webapp/templates/public/bundle.js
 *.pyc
 webapp/templates/src/views.pyc
+files
+files_filtered
+FOIA-TRAC-Report.zip

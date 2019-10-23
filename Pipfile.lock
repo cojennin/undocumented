@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "685ae9155f62fe60abc3a23697f5e147c5afb9b9fb89f765332e425998ed8a14"
+            "sha256": "f2ea6f8d8d3544eee6853ee70b5601708ab0d81f60e3a23aeba8ba6707e6fc31"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -52,6 +52,14 @@
             ],
             "index": "pypi",
             "version": "==2.7.0"
+        },
+        "cement": {
+            "hashes": [
+                "sha256:10a8459dc9fc31d6c038ede24a9081c5c3bd5fcd75b071e01baf281f81c9eace",
+                "sha256:3b6b550d56d8a893fc4e4c1d153c5322ab2aa991e85f3358890af63bafafa3f4"
+            ],
+            "index": "pypi",
+            "version": "==3.0.4"
         },
         "csvkit": {
             "hashes": [
@@ -105,6 +113,13 @@
             ],
             "index": "pypi",
             "version": "==0.3.3"
+        },
+        "lml": {
+            "hashes": [
+                "sha256:b1bef669dc077a1075fa64b99229b6341085b3b3a98d29c66df1853cc14e6c1a",
+                "sha256:ea5ba817b4adc9e9f5c21725cd2475f912933b7e2dfdf0792aed80077154f63f"
+            ],
+            "version": "==0.0.9"
         },
         "numpy": {
             "hashes": [
@@ -184,6 +199,15 @@
             "index": "pypi",
             "version": "==1.13.2"
         },
+        "prompt-toolkit": {
+            "hashes": [
+                "sha256:46642344ce457641f28fc9d1c9ca939b63dadf8df128b86f1b9860e59c73a5e4",
+                "sha256:e7f8af9e3d70f514373bf41aa51bc33af12a6db3f71461ea47fea985defb2c31",
+                "sha256:f15af68f66e664eaa559d4ac8a928111eebd5feda0c11738b5998045224829db"
+            ],
+            "index": "pypi",
+            "version": "==2.0.10"
+        },
         "protobuf": {
             "hashes": [
                 "sha256:03f43eac9d5b651f976e91cf46a25b75e5779d98f0f4114b0abfed83376d75f8",
@@ -207,6 +231,21 @@
             ],
             "index": "pypi",
             "version": "==3.8.0"
+        },
+        "pyexcel": {
+            "hashes": [
+                "sha256:7fac067e65567c380933b4d382587a5ce6581d0ad85992f6f0bc7c3f16012184",
+                "sha256:f0a7797f3a0de9e6f81151c9581fa90c4e1afce207dc47d2f0ba728dd2e24467"
+            ],
+            "index": "pypi",
+            "version": "==0.5.15"
+        },
+        "pyexcel-io": {
+            "hashes": [
+                "sha256:08dfe39553b996359b143de3d9ec43e196f1138d47cabb73af04a16821b84d79",
+                "sha256:2cba956814e72b66072d97b00ede4a084ad881ce72129088eb0dc3c7f3d670cd"
+            ],
+            "version": "==0.5.20"
         },
         "python-dateutil": {
             "hashes": [
@@ -268,6 +307,19 @@
             ],
             "index": "pypi",
             "version": "==1.2"
+        },
+        "texttable": {
+            "hashes": [
+                "sha256:eff3703781fbc7750125f50e10f001195174f13825a92a45e9403037d539b4f4"
+            ],
+            "version": "==1.6.2"
+        },
+        "wcwidth": {
+            "hashes": [
+                "sha256:3df37372226d6e63e1b1e1eda15c594bca98a22d33a23832a90998faa96bc65e",
+                "sha256:f4ebe71925af7b40a864553f761ed559b43544f8f71746c2d756c7fe788ade7c"
+            ],
+            "version": "==0.1.7"
         },
         "xlrd": {
             "hashes": [

@@ -32,6 +32,9 @@ Babel = "==2.7.0"
 et_xmlfile = "==1.0.1"
 SQLAlchemy = "==1.3.5"
 pg8000 = "*"
+pyexcel = "*"
+cement = "*"
+prompt-toolkit = "*"
 
 [requires]
 python_version = "3.7"
