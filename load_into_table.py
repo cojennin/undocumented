@@ -106,7 +106,7 @@ def load_into_sql(path):
     # We need to find the schema file and then map
     # tables to columns to column types
     table_column_type = {}
-    schema_file = find_file_at(path, lambda x: "EOIRDB_Schema.csv" in x)
+    schema_file = find_file_at(os.path.dirname(os.path.realpath(__file__)), lambda x: "schema.csv" in x)
     with open(schema_file, 'r') as csvfile:
         data = csv.reader(csvfile, delimiter='\t')
         next(data)
@@ -118,7 +118,22 @@ def load_into_sql(path):
                     row[1]: row[2]
                 }
 
-    files_to_filter = ["B_TblProceedCharges.csv"]
+    files_to_filter = [
+        "tbl_CasePriorityHistory.csv",
+        "tbl_Court_Appln.csv",
+        "tbl_Court_Motions.csv",
+        "tbl_CustodyHistory.csv",
+        "tbl_EOIR_Attorney.csv",
+        "tbl_JuvenileHistory.csv",
+        "tbl_Lead_Rider.csv",
+        "tbl_RepsAssigned.csv",
+        "tbl_schedule.csv",
+        "tblAppeal.csv",
+        "tblAppeal2.csv",
+        "tblAppealFedCourts.csv",
+        "tblProBono.csv",
+        "tblThreeMbrReferrals.csv"
+    ]
 
     csv_files = list(filter(lambda x: os.path.basename(x) in files_to_filter, list(get_files_at(path, lambda x: "EOIRDB_Schema.csv" not in x and ".csv" in x))))
 
@@ -161,6 +176,7 @@ def load_into_sql(path):
                                 invalid_writer.writerow([msg])
                             index += 1
 
+    print("Filtering completed")
     # csv_files_to_load = list(get_files_at(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'files_filtered'), lambda x: os.path.basename(x) in files_to_filter))
 
     for csv_to_load in csv_files:
