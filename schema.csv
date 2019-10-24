@@ -304,6 +304,7 @@ tblAppeal	strProbono	varchar	YES
 tblAppealFedCourts	idnAppealFedCourts	int	NO
 tblAppealFedCourts	lngAppealID	int	YES
 tblAppealFedCourts	datRequestedByOIL	datetime	YES
+tblAppealFedCourts	strFedCourtDecision	varchar	NO
 tblBarCodeType	idnBarCodeType	int	NO
 tblBarCodeType	strBarCodeTypeID	varchar	YES
 tblBarCodeType	strBarCodeTypeDescription	varchar	YES

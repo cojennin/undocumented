@@ -1,6 +1,7 @@
 import os
 import codecs
 import csv
+import sys
 from pathlib import Path
 import subprocess
 from prompt_toolkit import prompt
@@ -29,11 +30,19 @@ EOIR_DATA_PREPARED = "eoir_data_prepared"
 SCHEMA_FILE = "schema.csv"
 PROGRAM_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 
-DB_USER="i703642"
-DB_HOST="127.0.0.1"
+DB_USER="documented"
+DB_HOST="178.128.148.91"
 DB_NAME="documented"
+DB_PASSWRORD="d0c_um3n!"
+# DB_USER="i703642"
+# DB_HOST="127.0.0.1"
+# DB_NAME="documented"
+# DB_PASSWRORD=""
 
 def main():
+  # remove_file(PROGRAM_DIR / EOIR_DATA_PREPARED / "tblAppealFedCourts.csv")
+  # create_prepared_eoir_data_file(PROGRAM_DIR / EOIR_DATA / "tblAppealFedCourts.csv", PROGRAM_DIR / EOIR_DATA_PREPARED)
+  # return
 
   ## If the zip file doesn't exist, should we download it? 
   if eoir_zip_exists():
@@ -71,7 +80,7 @@ def main():
 
   # should_upload_data = is_prompt_yes(prompt('Upload EOIR data to database? (Y/n) '))
 
-  engine = sqlalchemy.create_engine(f'postgres+pg8000://{DB_USER}@{DB_HOST}/{DB_NAME}')
+  engine = sqlalchemy.create_engine(f'postgres+pg8000://{DB_USER}:{DB_PASSWRORD}@{DB_HOST}/{DB_NAME}')
   connection = engine.connect()
 
   should_upload_data = is_prompt_yes(prompt('Upload EOIR data to database? (Y/n) '))
@@ -83,9 +92,7 @@ def main():
 
   print("Tables created, uploading data...")
 
-  conn = pg8000.connect(host=DB_HOST, user=DB_USER, database=DB_NAME)
-  upload_csv_files(conn, PROGRAM_DIR / EOIR_DATA_PREPARED, lambda path: ".csv" in str(path) and "EOIRDB_Schema" not in str(path))
-  conn.close()
+  upload_csv_files(PROGRAM_DIR / EOIR_DATA_PREPARED, lambda path: ".csv" in str(path) and "EOIRDB_Schema" not in str(path))
 
 def is_prompt_yes_exact(answer):
   return answer.lower().strip() == 'y'
@@ -110,6 +117,9 @@ def remove_eoir_data():
 
 def remove_eoir_prepared_data():
   shutil.rmtree(PROGRAM_DIR / EOIR_DATA_PREPARED, ignore_errors=True)
+
+def remove_file(file_path):
+  file_path.unlink()
 
 def unzip_file(path_to_zip, path_to_extract):
   #### SEE ISSUES WITH PYTHON zipfiled MODULE
@@ -153,37 +163,41 @@ def fetch_eoir_zip():
             break
         out.write(data)
 
+FIND_LAST_COMMA_REGEX = re.compile(r",(?=[^.]*$)")
+
 def create_prepared_eoir_data(raw_data_path, prepared_data_path, filter_func):
   file_paths = filter(filter_func, list(raw_data_path.glob('*.csv')))
+
+  for csv_to_read in file_paths:
+    create_prepared_eoir_data_file(csv_to_read, prepared_data_path)
+
+def create_prepared_eoir_data_file(csv_to_read, prepared_data_path):
   table_schema = get_table_schema(PROGRAM_DIR / SCHEMA_FILE)
+  name = os.path.basename(csv_to_read)[:-4]
 
   prepared_data_path.mkdir(parents=True, exist_ok=True)
 
-  for csv_to_read in file_paths:
-    name = os.path.basename(csv_to_read)[:-4]
-
-    with open(prepared_data_path / f'{name}.csv', 'w') as write_csv_file:
-      with codecs.open(csv_to_read, 'r', 'utf-8') as read_csv_file:
-          print(f'Preparing csv: {name}')
-          ## Remove any NULL characters (\0)
-          ## Also, some CSV's have lines ending in "," before the return/newline, which end up escaping the last entry, so strip those with a regex
-          reader = csv.reader(
-            (re.sub(r",(?=[^.]*$)", '', line.replace('\0', ' ').replace('"', '')) for line in read_csv_file),
-            delimiter='\t'
-          )
-          writer = csv.writer(write_csv_file)
-          fields = next(reader)
-          writer.writerow(fields)
-          index = 0
-          all_keys_for_table = dict.fromkeys(table_schema[name].keys())
-          for row in reader:
-              cols = {
-                **(all_keys_for_table),
-                **(dict(zip(fields, row)))
-              }
-                  
-              writer.writerow(cols.values())
-              index += 1
+  with open(prepared_data_path / f'{name}.csv', 'w') as write_csv_file:
+    with codecs.open(csv_to_read, 'r', 'utf-8-sig') as read_csv_file:
+        print(f'Preparing csv: {name}')
+        ## Remove any NULL characters (\0)
+        ## Also, some CSV's have lines ending in "," before the return/newline, which end up escaping the last entry, so strip those with a regex
+        reader = csv.reader(
+          (FIND_LAST_COMMA_REGEX.sub('', line.replace('\0', ' ').replace('"', '')) for line in read_csv_file),
+          delimiter='\t',
+          skipinitialspace=True
+        )
+        writer = csv.writer(write_csv_file)
+        fields = next(reader)
+        writer.writerow(fields)
+        all_keys_for_table = dict.fromkeys(table_schema[name].keys())
+        for row in reader:
+          cols = {
+            **(all_keys_for_table),
+            **(dict(zip(fields, row)))
+          }
+              
+          writer.writerow(cols.values())
 
 def get_table_schema(schema_csv):
   table_schema = {}
@@ -235,23 +249,35 @@ def create_table_if_not_exists(table_name, table_schema, engine):
       *table_cols
   )
 
-  if not engine.dialect.has_table(engine, table_name):
-      table.create()
+  if engine.dialect.has_table(engine, table_name):
+      table.drop()
+  
+  table.create()
 
   return table
 
-def upload_csv_files(conn, path_to_files, filter_func):
+def upload_csv_files(path_to_files, filter_func):
   file_paths = filter(filter_func, list(path_to_files.glob('*.csv')))
+  conn = pg8000.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWRORD, database=DB_NAME)
 
   for csv_file in file_paths:
     with open(csv_file, 'rb') as csv_reader:
       name = os.path.basename(csv_file)[:-4]
+      conn = pg8000.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWRORD, database=DB_NAME)
       cursor = conn.cursor()
-      cursor.execute(f'COPY "{name}" FROM STDIN WITH (format csv, header)', stream = csv_reader)
-      cursor.close()
-      # fake_conn = engine.raw_connection()
-      # fake_cur = fake_conn.cursor()
-      # fake_cur.copy_from(csv_reader, name)
+      try:
+        print(f'Uploading {csv_file}')
+        cursor.execute(f'COPY "{name}" FROM STDIN WITH (format csv, header)', stream = csv_reader)
+        cursor.close()
+        conn.commit()
+        conn.close()
+      except pg8000.core.ProgrammingError as e:
+        print(f'Failed to upload {csv_file}', e)
+        ## If there's a ProgrammingError exception during copy, closing the cursor
+        ## doesn't seem to rollback the transaction, need to disconnect and reconnect
+        cursor.close()
+        conn.commit();
+        conn.close()
 
 if __name__ == "__main__":
     main()
