@@ -30,15 +30,6 @@ EOIR_DATA_PREPARED = "eoir_data_prepared"
 SCHEMA_FILE = "schema.csv"
 PROGRAM_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 
-DB_USER="documented"
-DB_HOST="178.128.148.91"
-DB_NAME="documented"
-DB_PASSWRORD="d0c_um3n!"
-# DB_USER="i703642"
-# DB_HOST="127.0.0.1"
-# DB_NAME="documented"
-# DB_PASSWRORD=""
-
 def main():
   # remove_file(PROGRAM_DIR / EOIR_DATA_PREPARED / "tblAppealFedCourts.csv")
   # create_prepared_eoir_data_file(PROGRAM_DIR / EOIR_DATA / "tblAppealFedCourts.csv", PROGRAM_DIR / EOIR_DATA_PREPARED)
