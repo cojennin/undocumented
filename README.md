@@ -2,32 +2,27 @@
 
 This project is to support the DocumentedNY team. 
 
-## Setting up
-First you're going to have to setup an AWS RDS instance for the data. Unfortantely this is not a simple task. 
-First download https://fileshare.eoir.justice.gov/FOIA-TRAC-Report.zip. This contains all the CSVS needed. 
+## Requirements for running locally
+- Install [pipenv](https://github.com/pypa/pipenv) and install dependencies using pipenv
+- Install Postgres (one option is [Postgres.app](https://postgresapp.com/))
+- Install a client to access Postgres ([Postico](https://eggerapps.at/postico/) works well)
 
-Next you need to load the data.
-You can load the data in any way you please, but the best way is to use the load_into_table.py script. This script loads the first 3000 rows into a db. (Note: You Should replace the user and password and stuff with your own information). This uses pandas to load the csv into a dataframe and puts it into a SQL db. For testing 3000 rows are fine but realistically you would want the whole thing.
+## Create a database in Postgres
+Using Postico (or another client) create a database on your local machine
 
-## Setting the primary keys.
-the `sqlThings/` folder has a file for setting the primary keys. If you run that it will try to set the primary keys.Note: You need to set up a config file in the same direcotry. Look at this for an example  https://github.com/Sail338/undocumented/blob/master/webapp/templates/src/driver/config.py.example.
+## Create config
+Take `example_config.ini` and copy it over to `config.ini`. You need to subsitute your Postgres settings. 
+Example `config.ini` (subsitute with your own values!):
 
-## Running the Webapp
-
-### MAKE SURE TO MAKE A CONFIG.PY FOLLWOING THIS EXAMPLE WITH YOUR DB INFO  https://github.com/Sail338/undocumented/blob/master/webapp/templates/src/driver/config.py.example.
 ```
-cd `webapp/templates/static #cd into react app
-npm install
-num run-script watch  #adds hot reloading, not there is a bug with caching so every time you reload the browswer you have to do a hard cache reset 
-
-# for the flask app
-cd webApp
-python run.py
+[DB]
+DB_USER=postgres_user
+DB_HOST=127.0.0.1
+DB_NAME=documented
+DB_PASSWORD=postgres_password
 ```
-## Explanation of WebApp
-On loading the webapp `localhost:5000` you will see the base table, A_tblCase. On Clicking on K/V Pair (A cell) You get all the tables that have that entry
 
-### Todos
-- Clean up UI
-- Make sure this scales properly when all the data is included
-- Add some searching features
+## Run the application
+- Run `pipenv shell`
+- Then run `python load_data.py`
+- You'll be prompted at stages for loading data
