@@ -18,6 +18,8 @@ from sqlalchemy import Boolean
 from sqlalchemy import DateTime
 import urllib3
 import pg8000
+import configparser
+import io
 import re
 
 http = urllib3.PoolManager()
@@ -28,7 +30,17 @@ EOIR_ZIP = "FOIA-TRAC-Report.zip"
 EOIR_DATA = "eoir_data"
 EOIR_DATA_PREPARED = "eoir_data_prepared"
 SCHEMA_FILE = "schema.csv"
+CONFIG_FILE = "config.ini"
 PROGRAM_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
+
+config = configparser.ConfigParser()
+config.read(PROGRAM_DIR / CONFIG_FILE)
+
+DB_USER=config['DB']['DB_USER']
+DB_HOST=config['DB']['DB_HOST']
+DB_NAME=config['DB']['DB_NAME']
+DB_PASSWORD=config['DB']['DB_PASSWORD']
+
 
 def main():
   # remove_file(PROGRAM_DIR / EOIR_DATA_PREPARED / "tblAppealFedCourts.csv")
