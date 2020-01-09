@@ -83,7 +83,7 @@ def main():
 
   # should_upload_data = is_prompt_yes(prompt('Upload EOIR data to database? (Y/n) '))
 
-  engine = sqlalchemy.create_engine(f'postgres+pg8000://{DB_USER}:{DB_PASSWRORD}@{DB_HOST}/{DB_NAME}')
+  engine = sqlalchemy.create_engine(f'postgres+pg8000://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}')
   connection = engine.connect()
 
   should_upload_data = is_prompt_yes(prompt('Upload EOIR data to database? (Y/n) '))
@@ -261,12 +261,12 @@ def create_table_if_not_exists(table_name, table_schema, engine):
 
 def upload_csv_files(path_to_files, filter_func):
   file_paths = filter(filter_func, list(path_to_files.glob('*.csv')))
-  conn = pg8000.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWRORD, database=DB_NAME)
+  conn = pg8000.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_NAME)
 
   for csv_file in file_paths:
     with open(csv_file, 'rb') as csv_reader:
       name = os.path.basename(csv_file)[:-4]
-      conn = pg8000.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWRORD, database=DB_NAME)
+      conn = pg8000.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_NAME)
       cursor = conn.cursor()
       try:
         print(f'Uploading {csv_file}')
