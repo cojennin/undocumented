@@ -43,9 +43,15 @@ DB_PASSWORD=config['DB']['DB_PASSWORD']
 
 
 def main():
+  engine = sqlalchemy.create_engine(f'postgres+pg8000://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}')
+  connection = engine.connect()
   # remove_file(PROGRAM_DIR / EOIR_DATA_PREPARED / "tblAppealFedCourts.csv")
   # create_prepared_eoir_data_file(PROGRAM_DIR / EOIR_DATA / "tblAppealFedCourts.csv", PROGRAM_DIR / EOIR_DATA_PREPARED)
   # return
+
+  coerce_database_column_types(engine, get_table_schema(PROGRAM_DIR / SCHEMA_FILE))
+  
+  return
 
   ## If the zip file doesn't exist, should we download it? 
   if eoir_zip_exists():
@@ -82,9 +88,6 @@ def main():
     create_prepared_eoir_data(PROGRAM_DIR / EOIR_DATA, PROGRAM_DIR / EOIR_DATA_PREPARED, lambda path: ".csv" in str(path) and "EOIRDB_Schema" not in str(path))
 
   # should_upload_data = is_prompt_yes(prompt('Upload EOIR data to database? (Y/n) '))
-
-  engine = sqlalchemy.create_engine(f'postgres+pg8000://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}')
-  connection = engine.connect()
 
   should_upload_data = is_prompt_yes(prompt('Upload EOIR data to database? (Y/n) '))
 
@@ -235,12 +238,6 @@ def create_table_if_not_exists(table_name, table_schema, engine):
       (name, col_type) = col
 
       maybe_column_type = String
-      # if col_type == "int":
-      #     maybe_column_type = BigInteger
-      # elif col_type == "bit":
-      #     maybe_column_type = SmallInteger
-      # elif col_type == "datetime":
-      #     maybe_column_type = DateTime
       
       return Column(name, maybe_column_type)
 
@@ -282,6 +279,52 @@ def upload_csv_files(path_to_files, filter_func):
         conn.commit();
         conn.close()
 
+def coerce_database_column_types(engine, table_schema):
+  print(table_schema)
+
+  ## Create a table to put invalid data as JSON
+  conn = pg8000.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_NAME)
+  cursor = conn.cursor()
+
+  cursor.execute(f'CREATE TABLE IF NOT EXISTS invalid_data ( id serial, table_name VARCHAR, invalid_data JSON, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP );')
+  cursor.close()
+  conn.commit()
+  conn.close()
+
+  for table in table_schema:
+    for column in table_schema[table]:
+      
+      conn = pg8000.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_NAME)
+      cursor = conn.cursor()
+      cursor.execute(f'select data_type from information_schema.columns where table_name = \'{table}\' and column_name = \'{column}\'')
+      col_datatype = cursor.fetchone()[0]
+      
+
+      try:
+        print(f'Coercing column types')
+
+        if table_schema[table][column] == 'datetime' and col_datatype != 'timestamp without time zone':
+          # 23 is the length of a formatted date
+          cursor.execute(f'INSERT INTO invalid_data(table_name, invalid_data) SELECT \'{table}\', row_to_json("{table}") from "{table}" where char_length("{column}") != 23;')
+          cursor.execute(f'DELETE FROM "{table}" WHERE char_length("{column}") != 23;')
+          cursor.execute(f'ALTER TABLE "{table}" ALTER COLUMN "{column}" TYPE TIMESTAMP USING "{column}"::timestamp')
+        elif table_schema[table][column] == 'int' and col_datatype != 'integer':
+          cursor.execute(f'ALTER TABLE "{table}" ALTER COLUMN "{column}" TYPE INT USING "{column}"::integer')
+        elif table_schema[table][column] == 'bit' and col_datatype != 'smallint':
+          cursor.execute(f'ALTER TABLE "{table}" ALTER COLUMN "{column}" TYPE SMALLINT USING "{column}"::smallint')
+
+        # cursor.execute(f'COPY "{name}" FROM STDIN WITH (format csv, header)', stream = csv_reader)
+        cursor.close()
+        conn.commit()
+        conn.close()
+      except pg8000.core.ProgrammingError as e:
+        print(f'Failed to coerce datatype', e)
+        ## If there's a ProgrammingError exception during copy, closing the cursor
+        ## doesn't seem to rollback the transaction, need to disconnect and reconnect
+        cursor.close()
+        conn.commit();
+        conn.close()
+  
+
 if __name__ == "__main__":
     main()
-
